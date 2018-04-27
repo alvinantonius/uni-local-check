@@ -1,5 +1,8 @@
 
 # Created by https://www.gitignore.io/api/go,macos
+*.csv
+*.log
+/acl-check
 
 ### Go ###
 # Binaries for programs and plugins

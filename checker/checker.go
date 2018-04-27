@@ -13,7 +13,7 @@ import (
 	"gopkg.in/olivere/elastic.v3"
 )
 
-var systemContext = []byte{0x00, 0x00, 0x00, 0x00, 0x3f, 0x3f, 0xb1, 0xf8, 0x05, 0x1f, 0x59, 0x40, 0xd4, 0xb1, 0xfa, 0x8f, 0xd6, 0xeb, 0x01, 0xc8, 0x91, 0x00, 0x07}
+var systemContext = []byte{0x00, 0x00, 0x00, 0x00, 0x3f, 0xb1, 0xf8, 0x05, 0x1f, 0x59, 0x40, 0xd4, 0xb1, 0xfa, 0x8f, 0xd6, 0xeb, 0x01, 0xc8, 0x91, 0x00, 0x07}
 
 const EyeotaOrgID = "78dd4a51-4d4e-431d-bb94-c422a2ede16f"
 
@@ -303,6 +303,7 @@ func UniqueOrgHasCampaign() {
 }
 
 func CheckCampaignsOwnership() {
+	fmt.Println("Check Campaigns Ownership")
 	campaigns := GetAllCampaigns()
 
 	/*
@@ -314,6 +315,9 @@ func CheckCampaignsOwnership() {
 		  	+ need to check group token
 		-
 	*/
+
+	fmt.Println("Total Campaigns :", len(campaigns))
+
 	for _, c := range campaigns {
 		// check platform_id shouldn't be null
 		if c.PlatformID == "" {
@@ -322,14 +326,10 @@ func CheckCampaignsOwnership() {
 		}
 
 		// check campaigns should be owned by one of segments org
-		var valid bool
 		var targetOrgID string
 		mapOrgID := make(map[string]bool)
 		for _, sID := range c.Segments {
 			s := GetSegment(sID)
-			if s.OrganizationID == c.OrganizationID {
-				valid = true
-			}
 
 			// get all org from segments that is not geoip segment
 			if s.ParentID != GeoIPRoot {
@@ -345,9 +345,6 @@ func CheckCampaignsOwnership() {
 			targetOrgID = EyeotaOrgID
 		}
 
-		if !valid {
-			fmt.Println("campaign ownership not moved:", c.ID)
-		}
 		if targetOrgID == "" {
 			fmt.Println("can't find campaign owner:", c.ID)
 		}
@@ -373,31 +370,36 @@ func IsValidCampaignsTokens(c Campaign) {
 	for _, sID := range c.Segments {
 		s := GetSegment(sID)
 		sORg := GetOrg(s.OrganizationID)
-		var isInBuyerList bool
-		// check private exchange
-		for _, buyerOrgID := range sORg.Buyers {
-			if buyerOrgID == org.ID {
-				isInBuyerList = true
-				break
-			}
-		}
-		if !isInBuyerList {
-			fmt.Println("not in buyer list. OrgID:", org.ID, "segmentID:", s.ID)
-		}
 
-		// check group token
-		buyerACLToken := sORg.ACLToken
-		buyerACLToken[3] = 0x02
-
-		var isGroupTokenValid bool
-		for _, token := range orgGroupTokens {
-			if bytes.Equal(buyerACLToken, token) {
-				isGroupTokenValid = true
-				break
+		// only check for private exchange and group token if segment's org is different than campaign's org
+		if s.OrganizationID != c.OrganizationID && s.ParentID != GeoIPRoot {
+			var isInBuyerList bool
+			// check private exchange
+			for _, buyerOrgID := range sORg.Buyers {
+				if buyerOrgID == org.ID {
+					isInBuyerList = true
+					break
+				}
 			}
-		}
-		if !isGroupTokenValid {
-			fmt.Println("group token no access. OrgID:", org.ID, "segmentID:", s.ID)
+			if !isInBuyerList {
+				fmt.Println("not in buyer list. OrgID:", org.ID, "segmentID:", s.ID)
+			}
+
+			// check group token
+			buyerACLToken := make([]byte, len(sORg.ACLToken))
+			copy(buyerACLToken, sORg.ACLToken)
+			buyerACLToken[3] = 0x02
+
+			var isGroupTokenValid bool
+			for _, token := range orgGroupTokens {
+				if bytes.Equal(buyerACLToken, token) {
+					isGroupTokenValid = true
+					break
+				}
+			}
+			if !isGroupTokenValid {
+				fmt.Println("group token no access. OrgID:", org.ID, "segmentID:", s.ID)
+			}
 		}
 
 	}
@@ -414,8 +416,7 @@ func IsValidCampaignsTokens(c Campaign) {
 	tokenCopy := cTokens
 
 	// campaign's token should contains system-context and org token only
-	orgToken := append([]byte{0x00, 0x00, 0x00, 0x00}, org.ACLToken...)
-	orgToken = append(orgToken, []byte{0x00, 0x07}...)
+	orgToken := append(org.ACLToken, []byte{0x00, 0x07}...)
 	var systemTokenFound, orgTokenFound bool
 	for i, t := range cTokens {
 		if bytes.Equal(t, systemContext) {
