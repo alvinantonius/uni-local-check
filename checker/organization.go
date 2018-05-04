@@ -19,14 +19,14 @@ func GetOrg(orgID string) Organization {
 		return org
 	}
 
-	var name string
+	var name, externalID string
 	var aclToken, groupToken []byte
 	var buyers, publishers []string
 	var isDMP, isBuyer, isPublisher bool
 
 	err := cassandra.GetSession().
-		Query(`SELECT name, acl_token, dmp_buyers, dmp_publishers, group_tokens, isdmp, isbuyer, ispublisher FROM organizations WHERE id = ?`, orgID).
-		Scan(&name, &aclToken, &buyers, &publishers, &groupToken, &isDMP, &isBuyer, &isPublisher)
+		Query(`SELECT name, eyeota_id, acl_token, dmp_buyers, dmp_publishers, group_tokens, isdmp, isbuyer, ispublisher FROM organizations WHERE id = ?`, orgID).
+		Scan(&name, &externalID, &aclToken, &buyers, &publishers, &groupToken, &isDMP, &isBuyer, &isPublisher)
 	if err != nil {
 		log.Println(err)
 	}
@@ -34,6 +34,7 @@ func GetOrg(orgID string) Organization {
 	org = Organization{
 		ID:          orgID,
 		Name:        name,
+		ExternalID:  externalID,
 		ACLToken:    aclToken,
 		GroupToken:  groupToken,
 		Buyers:      buyers,

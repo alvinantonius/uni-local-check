@@ -18,5 +18,5 @@ func init() {
 }
 
 func main() {
-	checker.CheckCampaignsOwnership()
+	checker.CheckORG()
 }

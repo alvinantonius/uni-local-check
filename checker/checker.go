@@ -16,6 +16,7 @@ import (
 var systemContext = []byte{0x00, 0x00, 0x00, 0x00, 0x3f, 0xb1, 0xf8, 0x05, 0x1f, 0x59, 0x40, 0xd4, 0xb1, 0xfa, 0x8f, 0xd6, 0xeb, 0x01, 0xc8, 0x91, 0x00, 0x07}
 
 const EyeotaOrgID = "78dd4a51-4d4e-431d-bb94-c422a2ede16f"
+const ESIndex = "uni"
 
 func CheckByMappings() {
 
@@ -176,7 +177,7 @@ func CampaignsWithCrossOrgSegments() {
 func GetAllMappings() (maps []Mapping) {
 	query := elastic.NewMatchQuery("deleted", false)
 	res, err := es.GetClient().Search().
-		Index("uni").
+		Index(ESIndex).
 		Query(query).
 		Type("mappings").
 		Do()
@@ -187,7 +188,7 @@ func GetAllMappings() (maps []Mapping) {
 	total := res.Hits.TotalHits
 
 	scroller := es.GetClient().Scroll().
-		Index("uni").
+		Index(ESIndex).
 		Query(query).
 		Type("mappings").
 		Size(int(total))
@@ -213,7 +214,7 @@ func GetAllMappings() (maps []Mapping) {
 func GetAllCampaigns() (campaigns []Campaign) {
 	// query := elastic.NewMatchQuery("deleted", false)
 	res, err := es.GetClient().Search().
-		Index("uni").
+		Index(ESIndex).
 		// Query(query).
 		Type("campaigns").
 		Do()
@@ -224,7 +225,7 @@ func GetAllCampaigns() (campaigns []Campaign) {
 	total := res.Hits.TotalHits
 
 	scroller := es.GetClient().Scroll().
-		Index("uni").
+		Index(ESIndex).
 		// Query(query).
 		Type("campaigns").
 		Size(int(total))
@@ -299,7 +300,7 @@ func UniqueOrgHasCampaign() {
 		data = append(data, []string{id, org.Name, strconv.FormatInt(org.TotalCamp, 10), strconv.FormatInt(org.ActiveCamp, 10), strconv.FormatInt(org.InactiveCamp, 10), strconv.FormatInt(org.DeletedCamp, 10)})
 	}
 
-	ToCSV("all-campaigns-org.csv", data)
+	ToCSV("all-campaigns-old-org.csv", data)
 }
 
 func CheckCampaignsOwnership() {
@@ -323,6 +324,16 @@ func CheckCampaignsOwnership() {
 		if c.PlatformID == "" {
 			fmt.Println("No platform:", c.ID)
 			// continue
+		}
+
+		if c.PlatformID == c.OrganizationID {
+			fmt.Println("Org and platform id is similar. CampaignID :", c.ID)
+		}
+
+		// check if platform is buyer or not?
+		platform := GetOrg(c.PlatformID)
+		if !platform.IsBuyer {
+			fmt.Println("platform-id is not buyer org. CID :", c.ID, "OrgName :", platform.Name, "deleted :", c.Deleted)
 		}
 
 		// check campaigns should be owned by one of segments org

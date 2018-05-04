@@ -33,6 +33,7 @@ type (
 	Organization struct {
 		ID          string
 		Name        string
+		ExternalID  string
 		ACLToken    []byte
 		GroupToken  []byte
 		Buyers      []string
@@ -40,5 +41,6 @@ type (
 		IsBuyer     bool
 		IsDMP       bool
 		IsPublisher bool
+		Tags        []string
 	}
 )
