@@ -452,3 +452,26 @@ func IsValidCampaignsTokens(c Campaign) {
 		}
 	}
 }
+
+func CompleteCheck() {
+	// get all mappings
+
+	// get all segments
+
+	/* check all mappings must be pointing to correct segments
+	- using private exchange properly
+	- segments is not deleted */
+
+	// check all linked segments must go through private exchange
+
+	// check segments
+
+	/* check campaigns
+	- no campaigns pointing to only geoip
+	- no campaigns pointing to 2 geoip
+	- check ACL
+	- check private exchange
+	- check campaigns pointing to deleted segments
+	*/
+
+}

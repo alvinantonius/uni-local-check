@@ -3,6 +3,8 @@
 *.csv
 *.log
 /acl-check
+./acl-check
+acl-check
 
 ### Go ###
 # Binaries for programs and plugins
