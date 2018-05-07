@@ -3,7 +3,7 @@ package checker
 import (
 	"log"
 
-	"github.com/alvinantonius/acl-check/conn/cassandra"
+	"github.com/alvinantonius/uni-local-check/conn/cassandra"
 )
 
 const (

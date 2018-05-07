@@ -8,7 +8,7 @@ import (
 	"log"
 	"strconv"
 
-	es "github.com/alvinantonius/acl-check/conn/elastic"
+	es "github.com/alvinantonius/uni-local-check/conn/elastic"
 
 	"gopkg.in/olivere/elastic.v3"
 )

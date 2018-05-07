@@ -3,6 +3,7 @@
 *.csv
 *.log
 acl-check
+uni-local-check
 
 ### Go ###
 # Binaries for programs and plugins

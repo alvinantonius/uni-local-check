@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/alvinantonius/acl-check/checker"
-	"github.com/alvinantonius/acl-check/conn/cassandra"
-	"github.com/alvinantonius/acl-check/conn/elastic"
+	"github.com/alvinantonius/uni-local-check/checker"
+	"github.com/alvinantonius/uni-local-check/conn/cassandra"
+	"github.com/alvinantonius/uni-local-check/conn/elastic"
 )
 
 const (
