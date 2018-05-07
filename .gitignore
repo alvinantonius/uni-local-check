@@ -2,8 +2,6 @@
 # Created by https://www.gitignore.io/api/go,macos
 *.csv
 *.log
-/acl-check
-./acl-check
 acl-check
 
 ### Go ###
